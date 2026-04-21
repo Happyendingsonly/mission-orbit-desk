@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MissionControl } from "@/components/mission-control/MissionControl";
+import { MissionControlGate } from "@/components/mission-control/MissionControlGate";
+import { AuthProvider } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -16,5 +17,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  return <MissionControl />;
+  return (
+    <AuthProvider>
+      <MissionControlGate />
+    </AuthProvider>
+  );
 }

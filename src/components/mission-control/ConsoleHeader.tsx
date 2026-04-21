@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 import { formatUtc } from "@/lib/format";
 import { operator } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/use-auth";
 
 export function ConsoleHeader() {
+  const { signOut } = useAuth();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -33,6 +36,14 @@ export function ConsoleHeader() {
               All systems nominal
             </span>
           </div>
+          <button
+            onClick={() => signOut()}
+            title="Sign out"
+            className="flex items-center gap-1.5 rounded border border-grid-line bg-panel/60 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+          >
+            <LogOut className="h-3 w-3" />
+            Disconnect
+          </button>
         </div>
       </div>
     </header>
