@@ -16,14 +16,34 @@ export function MissionControlGate() {
       return;
     }
     (async () => {
-      const { data, error } = await supabase
+      // Look up current operator
+      const { data: existing } = await supabase
         .from("operator_registry")
         .select("user_id")
-        .eq("user_id", user.id)
         .maybeSingle();
+
       if (cancelled) return;
-      if (error || !data) {
-        // Signed-in user is NOT the operator — boot them.
+
+      if (existing) {
+        setIsOperator(existing.user_id === user.id);
+        if (existing.user_id !== user.id) {
+          await signOut();
+        }
+        return;
+      }
+
+      // No operator yet — claim the slot for this user.
+      const { error: claimErr } = await supabase
+        .from("operator_registry")
+        .insert({
+          user_id: user.id,
+          email: user.email ?? "unknown@operator",
+        });
+
+      if (cancelled) return;
+
+      if (claimErr) {
+        // Race: someone else claimed it first.
         await signOut();
         setIsOperator(false);
         return;
