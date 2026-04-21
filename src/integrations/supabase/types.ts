@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          agent_name: string
+          classification: string
+          id: string
+          message: string
+          timestamp: string
+        }
+        Insert: {
+          agent_name: string
+          classification: string
+          id?: string
+          message: string
+          timestamp?: string
+        }
+        Update: {
+          agent_name?: string
+          classification?: string
+          id?: string
+          message?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      agents: {
+        Row: {
+          created_at: string
+          current_mission: string | null
+          description: string | null
+          id: string
+          last_contact: string
+          name: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          current_mission?: string | null
+          description?: string | null
+          id?: string
+          last_contact?: string
+          name: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          current_mission?: string | null
+          description?: string | null
+          id?: string
+          last_contact?: string
+          name?: string
+          status?: string
+        }
+        Relationships: []
+      }
       operator_registry: {
         Row: {
           claimed_at: string
@@ -32,6 +86,39 @@ export type Database = {
           email?: string
           id?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      pending_reviews: {
+        Row: {
+          agent_name: string
+          id: string
+          priority: string
+          proposed_at: string
+          resolution: string | null
+          resolved_at: string | null
+          summary: string
+          tag: string
+        }
+        Insert: {
+          agent_name: string
+          id?: string
+          priority: string
+          proposed_at?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          summary: string
+          tag: string
+        }
+        Update: {
+          agent_name?: string
+          id?: string
+          priority?: string
+          proposed_at?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          summary?: string
+          tag?: string
         }
         Relationships: []
       }

@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { formatUtc } from "@/lib/format";
-import { operator } from "@/lib/mock-data";
 import { useAuth } from "@/hooks/use-auth";
 
+const ORG_NAME = "Happy Endings Inc";
+
 export function ConsoleHeader() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const operatorName =
+    (user?.user_metadata?.full_name as string | undefined) ??
+    (user?.user_metadata?.name as string | undefined) ??
+    user?.email ??
+    "Operator";
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -20,7 +26,7 @@ export function ConsoleHeader() {
             MISSION&nbsp;CONTROL
           </h1>
           <p className="mt-1 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            {operator.org} · Operator: {operator.name}
+            {ORG_NAME} · Operator: {operatorName}
           </p>
         </div>
         <div className="flex items-center gap-4">
