@@ -29,14 +29,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Misson Control" },
+      { name: "description", content: "Mission Control is a personal operations dashboard for AI agent oversight." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Misson Control" },
+      { property: "og:description", content: "Mission Control is a personal operations dashboard for AI agent oversight." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Misson Control" },
+      { name: "twitter:description", content: "Mission Control is a personal operations dashboard for AI agent oversight." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29d12691-006c-4232-a56a-6fb5655771d6/id-preview-26bfd034--d4de9995-a125-4cd9-9213-aa8ba290e995.lovable.app-1776735301854.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29d12691-006c-4232-a56a-6fb5655771d6/id-preview-26bfd034--d4de9995-a125-4cd9-9213-aa8ba290e995.lovable.app-1776735301854.png" },
     ],
     links: [
       {
