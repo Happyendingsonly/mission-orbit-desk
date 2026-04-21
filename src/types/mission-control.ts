@@ -4,23 +4,21 @@ export enum AgentStatus {
   BLOCKED = "BLOCKED",
 }
 
-export type AgentKind = "analyst" | "executor" | "reflection";
-
 export interface Agent {
   id: string;
   name: string;
-  kind: AgentKind;
   status: AgentStatus;
   lastContact: string; // ISO timestamp
-  currentMission?: string;
+  currentMission?: string | null;
+  description?: string | null;
 }
 
 export type ReviewPriority = "routine" | "elevated" | "critical";
+export type ReviewResolution = "approved" | "aborted";
 
 export interface PendingReviewItem {
   id: string;
-  tag: string; // e.g. "PAYMENTS-01"
-  agentId: string;
+  tag: string;
   agentName: string;
   summary: string;
   proposedAt: string;
@@ -31,7 +29,7 @@ export type LogClassification = "INFO" | "WARN" | "OK";
 
 export interface ActivityEntry {
   id: string;
-  timestamp: string; // ISO
+  timestamp: string;
   agentName: string;
   message: string;
   classification: LogClassification;
