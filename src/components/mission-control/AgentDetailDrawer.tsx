@@ -1,9 +1,12 @@
-import { Satellite, X } from "lucide-react";
+import { useState } from "react";
+import { KeyRound, Loader2, Satellite, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
   SheetClose,
 } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { AgentStatus, type Agent } from "@/types/mission-control";
 import { formatUtc, formatUtcShort, timeAgo } from "@/lib/format";
 import type { HealthState } from "@/lib/health";
@@ -15,6 +18,7 @@ import {
   useAgentTransmissions,
   type AgentDecision,
 } from "@/hooks/use-agent-detail";
+import { useUpdateAgentRotation } from "@/hooks/use-mission-data";
 
 const statusStyles: Record<AgentStatus, { color: string; dot: string }> = {
   [AgentStatus.ACTIVE]: { color: "text-signal", dot: "bg-signal" },
@@ -123,6 +127,9 @@ export function AgentDetailDrawer({ agent, health, open, onOpenChange }: Props) 
               </div>
             )}
           </Section>
+
+          {/* CONFIGURATION */}
+          <ConfigurationSection agent={agent} />
 
           {/* RECENT TRANSMISSIONS */}
           <Section title="Recent Transmissions">
