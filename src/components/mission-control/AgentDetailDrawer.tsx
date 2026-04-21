@@ -1,9 +1,12 @@
-import { Satellite, X } from "lucide-react";
+import { useState } from "react";
+import { KeyRound, Loader2, Satellite, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
   SheetClose,
 } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { AgentStatus, type Agent } from "@/types/mission-control";
 import { formatUtc, formatUtcShort, timeAgo } from "@/lib/format";
 import type { HealthState } from "@/lib/health";
@@ -15,6 +18,7 @@ import {
   useAgentTransmissions,
   type AgentDecision,
 } from "@/hooks/use-agent-detail";
+import { useUpdateAgentRotation } from "@/hooks/use-mission-data";
 
 const statusStyles: Record<AgentStatus, { color: string; dot: string }> = {
   [AgentStatus.ACTIVE]: { color: "text-signal", dot: "bg-signal" },
@@ -123,6 +127,9 @@ export function AgentDetailDrawer({ agent, health, open, onOpenChange }: Props) 
               </div>
             )}
           </Section>
+
+          {/* CONFIGURATION */}
+          <ConfigurationSection agent={agent} />
 
           {/* RECENT TRANSMISSIONS */}
           <Section title="Recent Transmissions">
@@ -347,5 +354,163 @@ function ErrorLine({ message }: { message: string }) {
     <div className="flex items-center justify-center rounded border border-critical/30 bg-critical/5 px-3 py-4 font-mono text-[10px] uppercase tracking-[0.22em] text-critical">
       ✕ {message}
     </div>
+  );
+}
+
+interface KeyAge {
+  label: string;
+  color: string;
+  pulse: boolean;
+}
+
+function deriveKeyAge(rotatedAt: string | null | undefined): KeyAge {
+  if (!rotatedAt) {
+    return { label: "never tracked", color: "text-muted-foreground/70", pulse: false };
+  }
+  const days = Math.floor(
+    (Date.now() - new Date(rotatedAt).getTime()) / (1000 * 60 * 60 * 24),
+  );
+  if (days < 30) return { label: `${days}d fresh`, color: "text-signal", pulse: false };
+  if (days < 90)
+    return { label: `${days}d aging`, color: "text-muted-foreground", pulse: false };
+  if (days < 180)
+    return { label: `${days}d overdue`, color: "text-warning", pulse: false };
+  return {
+    label: `${days}d CRITICAL — rotate now`,
+    color: "text-critical",
+    pulse: true,
+  };
+}
+
+function ConfigField({
+  label,
+  value,
+  small = false,
+}: {
+  label: string;
+  value: string | null | undefined;
+  small?: boolean;
+}) {
+  return (
+    <div className="rounded border border-grid-line bg-background/40 px-2.5 py-2">
+      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "mt-1 break-words font-mono text-foreground/90",
+          small ? "text-[11px] leading-snug" : "text-xs",
+          !value && "italic text-muted-foreground/60",
+        )}
+      >
+        {value ?? "not configured"}
+      </div>
+    </div>
+  );
+}
+
+function ConfigurationSection({ agent }: { agent: Agent }) {
+  const [editing, setEditing] = useState(false);
+  const [notes, setNotes] = useState("");
+  const rotation = useUpdateAgentRotation();
+  const age = deriveKeyAge(agent.keyLastRotatedAt);
+
+  const handleSubmit = async () => {
+    try {
+      await rotation.mutateAsync({
+        id: agent.id,
+        notes: notes.trim() ? notes.trim() : null,
+      });
+      toast.success("Rotation timestamp updated");
+      setEditing(false);
+      setNotes("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Update failed");
+    }
+  };
+
+  return (
+    <Section title="Configuration">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <ConfigField label="Provider" value={agent.provider} />
+        <ConfigField label="Model" value={agent.model} />
+      </div>
+      <div className="mt-2">
+        <ConfigField
+          label="Credentials"
+          value={agent.credentialsLocation}
+          small
+        />
+      </div>
+
+      <div className="mt-2 rounded border border-grid-line bg-background/40 px-2.5 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            Key age
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            className="flex items-center gap-1 rounded border border-grid-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-signal/40 hover:text-signal"
+          >
+            <KeyRound className="h-2.5 w-2.5" />
+            {editing ? "Cancel" : "Update rotation"}
+          </button>
+        </div>
+        <div
+          className={cn(
+            "mt-1 font-mono text-sm",
+            age.color,
+            age.pulse && "animate-pulse-glow",
+          )}
+        >
+          {age.label}
+        </div>
+        {agent.keyLastRotatedAt && (
+          <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground/70">
+            last rotated {formatUtc(agent.keyLastRotatedAt)}
+          </div>
+        )}
+
+        {editing && (
+          <div className="mt-3 flex flex-col gap-2 border-t border-grid-line pt-3">
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              Optional note (replaces existing)
+            </label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Rotated after exposure on 2026-04-21"
+              rows={2}
+              className="border-grid-line bg-background/40 font-mono text-[11px]"
+            />
+            <button
+              type="button"
+              disabled={rotation.isPending}
+              onClick={handleSubmit}
+              className="flex items-center justify-center gap-2 rounded border border-signal/40 bg-signal/10 px-2 py-1.5 font-mono text-[10px] uppercase tracking-widest text-signal transition-colors hover:bg-signal/20 disabled:opacity-50"
+            >
+              {rotation.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <KeyRound className="h-3 w-3" />
+              )}
+              Mark rotated · now
+            </button>
+          </div>
+        )}
+      </div>
+
+      {agent.configNotes && (
+        <div className="mt-2 rounded border border-grid-line/60 bg-background/20 px-2.5 py-2">
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            Notes
+          </div>
+          <p className="mt-1 text-[11px] italic leading-snug text-foreground/75">
+            {agent.configNotes}
+          </p>
+        </div>
+      )}
+    </Section>
   );
 }

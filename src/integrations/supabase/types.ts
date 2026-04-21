@@ -40,30 +40,45 @@ export type Database = {
       }
       agents: {
         Row: {
+          config_notes: string | null
           created_at: string
+          credentials_location: string | null
           current_mission: string | null
           description: string | null
           id: string
+          key_last_rotated_at: string | null
           last_contact: string
+          model: string | null
           name: string
+          provider: string | null
           status: string
         }
         Insert: {
+          config_notes?: string | null
           created_at?: string
+          credentials_location?: string | null
           current_mission?: string | null
           description?: string | null
           id?: string
+          key_last_rotated_at?: string | null
           last_contact?: string
+          model?: string | null
           name: string
+          provider?: string | null
           status: string
         }
         Update: {
+          config_notes?: string | null
           created_at?: string
+          credentials_location?: string | null
           current_mission?: string | null
           description?: string | null
           id?: string
+          key_last_rotated_at?: string | null
           last_contact?: string
+          model?: string | null
           name?: string
+          provider?: string | null
           status?: string
         }
         Relationships: []

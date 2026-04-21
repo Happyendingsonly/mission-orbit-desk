@@ -92,15 +92,25 @@ export function AgentCard({ agent }: { agent: Agent }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <span
-                className={cn(
-                  "font-mono text-sm tracking-wide text-foreground",
-                  agent.status === AgentStatus.ACTIVE &&
-                    "text-signal drop-shadow-[0_0_6px_var(--signal)]",
+              <div className="flex min-w-0 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "font-mono text-sm tracking-wide text-foreground",
+                    agent.status === AgentStatus.ACTIVE &&
+                      "text-signal drop-shadow-[0_0_6px_var(--signal)]",
+                  )}
+                >
+                  {agent.name}
+                </span>
+                {agent.provider && (
+                  <span
+                    className="rounded border border-grid-line/70 bg-background/40 px-1 py-px font-mono text-[8px] uppercase tracking-[0.18em] text-muted-foreground/80"
+                    title={agent.provider}
+                  >
+                    {shortProvider(agent.provider)}
+                  </span>
                 )}
-              >
-                {agent.name}
-              </span>
+              </div>
               <span
                 className={cn(
                   "flex items-center gap-1.5 rounded border border-grid-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest",
@@ -169,4 +179,15 @@ export function AgentCard({ agent }: { agent: Agent }) {
       />
     </>
   );
+}
+
+function shortProvider(provider: string): string {
+  const p = provider.toLowerCase();
+  if (p.includes("claude subscription") || p.includes("claude code"))
+    return "CLAUDE SUB";
+  if (p.includes("anthropic")) return "ANTHROPIC";
+  if (p.includes("kimi") || p.includes("moonshot")) return "KIMI";
+  if (p.includes("openai")) return "OPENAI";
+  if (p.includes("gemini") || p.includes("google")) return "GEMINI";
+  return provider.slice(0, 12).toUpperCase();
 }

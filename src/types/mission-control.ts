@@ -11,6 +11,11 @@ export interface Agent {
   lastContact: string; // ISO timestamp
   currentMission?: string | null;
   description?: string | null;
+  provider?: string | null;
+  model?: string | null;
+  credentialsLocation?: string | null;
+  keyLastRotatedAt?: string | null;
+  configNotes?: string | null;
 }
 
 export type ReviewPriority = "routine" | "elevated" | "critical";

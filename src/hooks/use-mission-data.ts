@@ -26,7 +26,9 @@ export const missionKeys = {
 async function fetchAgents(): Promise<Agent[]> {
   const { data, error } = await supabase
     .from("agents")
-    .select("id,name,status,current_mission,last_contact,description")
+    .select(
+      "id,name,status,current_mission,last_contact,description,provider,model,credentials_location,key_last_rotated_at,config_notes",
+    )
     .order("name", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((row) => ({
@@ -36,6 +38,11 @@ async function fetchAgents(): Promise<Agent[]> {
     currentMission: row.current_mission,
     lastContact: row.last_contact,
     description: row.description,
+    provider: row.provider,
+    model: row.model,
+    credentialsLocation: row.credentials_location,
+    keyLastRotatedAt: row.key_last_rotated_at,
+    configNotes: row.config_notes,
   }));
 }
 
@@ -117,6 +124,28 @@ export function useMissionRealtime() {
 }
 
 // ---------- Mutations ----------
+export function useUpdateAgentRotation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { id: string; notes?: string | null }) => {
+      const updates: { key_last_rotated_at: string; config_notes?: string } = {
+        key_last_rotated_at: new Date().toISOString(),
+      };
+      if (params.notes !== undefined && params.notes !== null) {
+        updates.config_notes = params.notes;
+      }
+      const { error } = await supabase
+        .from("agents")
+        .update(updates)
+        .eq("id", params.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: missionKeys.agents });
+    },
+  });
+}
+
 export function useResolveReview() {
   const qc = useQueryClient();
   return useMutation({
