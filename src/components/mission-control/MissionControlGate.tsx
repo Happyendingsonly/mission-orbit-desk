@@ -1,12 +1,43 @@
+import { useEffect, useState } from "react";
 import { MissionControl } from "./MissionControl";
 import { LoginConsole } from "./LoginConsole";
 import { Starfield } from "./Starfield";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export function MissionControlGate() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const [isOperator, setIsOperator] = useState<boolean | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setIsOperator(null);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("operator_registry")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        // Signed-in user is NOT the operator — boot them.
+        await signOut();
+        setIsOperator(false);
+        return;
+      }
+      setIsOperator(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, signOut]);
+
+  const checking = loading || (user && isOperator === null);
+
+  if (checking) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
         <Starfield />
@@ -19,5 +50,5 @@ export function MissionControlGate() {
     );
   }
 
-  return user ? <MissionControl /> : <LoginConsole />;
+  return user && isOperator ? <MissionControl /> : <LoginConsole />;
 }
