@@ -14,7 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      operator_registry: {
+        Row: {
+          claimed_at: string
+          email: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          email: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          email?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
